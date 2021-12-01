@@ -1,4 +1,27 @@
-﻿using System.Text.Json;
+﻿//
+//  RedditRestAPI.cs
+//
+//  Author:
+//       LuzFaltex Contributors
+//
+//  ISC License
+//
+//  Copyright (c) 2021 LuzFaltex
+//
+//  Permission to use, copy, modify, and/or distribute this software for any
+//  purpose with or without fee is hereby granted, provided that the above
+//  copyright notice and this permission notice appear in all copies.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Mara.Plugins.BetterEmbeds.Models.Reddit;
@@ -9,7 +32,8 @@ using Remora.Results;
 
 namespace Mara.Plugins.BetterEmbeds.API
 {
-    public sealed class RedditRestAPI
+    /// <inheritdoc />
+    public sealed class RedditRestAPI : IRedditRestAPI
     {
         public const string PostUrl = "https://www.reddit.com/r/{0}/comments/{1}/.json";
         public const string ProfileUrl = "https://www.reddit.com/user/{0}/about.json";
@@ -18,6 +42,12 @@ namespace Mara.Plugins.BetterEmbeds.API
         private readonly ILogger<RedditRestAPI> _logger;
         private readonly IRestHttpClient _restClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedditRestAPI"/> class.
+        /// </summary>
+        /// <param name="restClient">The rest client.</param>
+        /// <param name="serializerOptions">Serialization options.</param>
+        /// <param name="logger">A logger</param>
         public RedditRestAPI(IRestHttpClient restClient, IOptions<JsonSerializerOptions> serializerOptions, ILogger<RedditRestAPI> logger)
         {
             _restClient = restClient;
@@ -25,15 +55,8 @@ namespace Mara.Plugins.BetterEmbeds.API
             _logger = logger;
         }
 
-        /// <summary>
-        /// Gets a post using the subreddit and post id.
-        /// </summary>
-        /// <param name="subredditName">The subreddit this post belongs to.</param>
-        /// <param name="postId">The unique id of this post.</param>
-        /// <param name="allowNullReturn">Whether or not to allow an empty return value.</param>
-        /// <param name="cancellationToken">The cancellation token for this operation.</param>
-        /// <returns>A retrieval result which may or may not have succeeded.</returns>
-        public async Task<Result<RedditPost>> GetRedditPostAsync
+        /// <inheritdoc />
+        public async Task<Result<IRedditPost>> GetRedditPostAsync
         (
             string subredditName,
             string postId,
@@ -43,7 +66,7 @@ namespace Mara.Plugins.BetterEmbeds.API
         {
             var redditUrl = string.Format(PostUrl, subredditName, postId);
 
-            return await _restClient.GetAsync<RedditPost>
+            return await _restClient.GetAsync<IRedditPost>
             (
                 redditUrl,
                 "$[0].data.children[0].data",
@@ -53,7 +76,8 @@ namespace Mara.Plugins.BetterEmbeds.API
             );
         }
 
-        public async Task<Result<RedditUser>> GetRedditUserAsync
+        /// <inheritdoc />
+        public async Task<Result<IRedditUser>> GetRedditUserAsync
         (
             string username,
             bool allowNullReturn = false,
@@ -62,10 +86,10 @@ namespace Mara.Plugins.BetterEmbeds.API
         {
             var redditUrl = string.Format(ProfileUrl, username);
 
-            return await _restClient.GetAsync<RedditUser>
+            return await _restClient.GetAsync<IRedditUser>
             (
-                redditUrl, 
-                "$.data.subreddit", 
+                redditUrl,
+                "$.data.subreddit",
                 x => x.Build(),
                 allowNullReturn,
                 cancellationToken

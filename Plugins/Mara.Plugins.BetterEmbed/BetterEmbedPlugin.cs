@@ -19,6 +19,7 @@ using Polly.Contrib.WaitAndRetry;
 using Remora.Results;
 using System.Threading.Tasks;
 using Polly.Retry;
+using Mara.Plugins.BetterEmbeds.API;
 
 [assembly:RemoraPlugin(typeof(BetterEmbedPlugin))]
 
@@ -40,7 +41,7 @@ namespace Mara.Plugins.BetterEmbeds
         public override Result ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IQuoteService, QuoteService>();
-            // serviceCollection.AddRestHttpClient<RestHttpClient<RestResultError<HttpResultError>>>();
+            serviceCollection.AddScoped<RedditRestAPI>();
 
             var retryDelay = Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), 5);
 

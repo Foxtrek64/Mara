@@ -18,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{39EA8E1A-E1D9-419D-AF42-860058C74536}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		stylecop.json = stylecop.json
+		stylecop.ruleset = stylecop.ruleset
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mara.Plugins.Consent", "Plugins\Mara.Plugins.Consent\Mara.Plugins.Consent.csproj", "{EE0456BD-8336-4C69-9E03-143B5B37BC51}"
