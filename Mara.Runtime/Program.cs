@@ -1,4 +1,27 @@
-﻿using System;
+﻿//
+//  Program.cs
+//
+//  Author:
+//       LuzFaltex Contributors
+//
+//  ISC License
+//
+//  Copyright (c) 2021 LuzFaltex
+//
+//  Permission to use, copy, modify, and/or distribute this software for any
+//  purpose with or without fee is hereby granted, provided that the above
+//  copyright notice and this permission notice appear in all copies.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -19,19 +42,28 @@ using Remora.Plugins.Services;
 using Remora.Results;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Mara.Runtime
 {
+    /// <summary>
+    /// The application entry point.
+    /// </summary>
     public class Program
     {
+        private const string DevEnvVar = "DOTNET_ENVIRONMENT";
+        private const string LogOutputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}";
+
         private static readonly string AppDir =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LuzFaltex", "Mara");
 
         private static readonly string LogDir = Path.Combine(AppDir, "..\\Logs");
 
-        private const string DevEnvVar = "DOTNET_ENVIRONMENT";
-
-        public static async Task<int> Main(string[] args)
+        /// <summary>
+        /// The app entry point.
+        /// </summary>
+        /// <returns>An integer representing the result of the async operation. Zero indicates success while non-zero results indicate failure.</returns>
+        public static async Task<int> Main()
         {
             var environment = Environment.GetEnvironmentVariable(DevEnvVar) ?? "Production";
 
@@ -46,6 +78,7 @@ namespace Mara.Runtime
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     builder.AddEnvironmentVariables("Mara_");
+
                     builder.AddJsonFile("appsettings.json", true);
                     builder.AddJsonFile($"appsettings{context.HostingEnvironment.EnvironmentName}.json", true);
                     builder.AddJsonFile(Path.Combine(AppDir, "appsettings.json"), true);
@@ -77,7 +110,7 @@ namespace Mara.Runtime
                     services.AddSingleton(pluginService);
                     services.AddSingleton<IdentityInformationConfiguration>();
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.Configuration[nameof(MaraConfig.DiscordToken)]));
+                    Debug.Assert(!string.IsNullOrEmpty(context.Configuration[nameof(MaraConfig.DiscordToken)]), $"The '{nameof(MaraConfig.DiscordToken)}' must not be null or empty.");
 
                     services.AddDiscordGateway(x => context.Configuration[nameof(MaraConfig.DiscordToken)]);
                     services.AddDiscordCommands(enableSlash: true);
@@ -98,14 +131,15 @@ namespace Mara.Runtime
                             GatewayIntents.Guilds |
                             GatewayIntents.GuildWebhooks);
                 })
-                .ConfigureLogging((_, builder) =>
+                .ConfigureLogging((context, builder) =>
                 {
                     Serilog.Core.Logger seriLogger = new LoggerConfiguration()
                         .MinimumLevel.Verbose()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .ReadFrom.Configuration(context.Configuration)
                         .Enrich.FromLogContext()
-                        .WriteTo.Console()
-                        .WriteTo.File(Path.Combine(LogDir, "Execution_.log"), rollingInterval: RollingInterval.Day)
+                        .WriteTo.Console(outputTemplate: LogOutputTemplate, theme: AnsiConsoleTheme.Code)
+                        .WriteTo.File(Path.Combine(LogDir, "Execution_.log"), outputTemplate: LogOutputTemplate, rollingInterval: RollingInterval.Day)
                         .CreateLogger();
 
                     builder.AddSerilog(seriLogger);
@@ -121,8 +155,11 @@ namespace Mara.Runtime
             if (!File.Exists(Path.Combine(AppDir, "appsettings.json")))
             {
                 var config = MaraConfig.Default;
-                await File.WriteAllTextAsync(Path.Combine(AppDir, "appsettings.json"),
-                    JsonSerializer.Serialize(config, new JsonSerializerOptions {WriteIndented = true}));
+                await File.WriteAllTextAsync
+                (
+                    Path.Combine(AppDir, "appsettings.json"),
+                    JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true })
+                );
 
                 Console.WriteLine($"Default app config written to {Path.Combine(AppDir, "appsettings.json")}. Please provide your app configurations here or in environment variables, then restart the bot.");
                 return 0;

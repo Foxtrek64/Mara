@@ -1,18 +1,58 @@
-﻿using System.Collections.Generic;
+﻿//
+//  MaraConfig.cs
+//
+//  Author:
+//       LuzFaltex Contributors
+//
+//  ISC License
+//
+//  Copyright (c) 2021 LuzFaltex
+//
+//  Permission to use, copy, modify, and/or distribute this software for any
+//  purpose with or without fee is hereby granted, provided that the above
+//  copyright notice and this permission notice appear in all copies.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+
+using System.Collections.Generic;
 
 namespace Mara.Common.Models
 {
+    /// <summary>
+    /// Represents the primary configuration file for the bot.
+    /// </summary>
     public sealed class MaraConfig
     {
+        /// <summary>
+        /// A default implementation for the config with zeroed values.
+        /// </summary>
         public static readonly MaraConfig Default = new()
         {
-            DiscordToken = "",
-            ConnectionStrings = new() {["DbConnection"] = ""},
-            PrivacyPolicyUrl = ""
+            DiscordToken = string.Empty,
+            ConnectionStrings = new() { ["DbConnection"] = string.Empty },
+            PrivacyPolicyUrl = string.Empty
         };
 
-        public string DiscordToken { get; init; } = "";
+        /// <summary>
+        /// Gets the Discord Bot Token for authenticating with the Discord API.
+        /// </summary>
+        public string DiscordToken { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Gets a collection of connection strings. Multiple databases may be stored here for plugin-specific databases.
+        /// </summary>
         public Dictionary<string, string> ConnectionStrings { get; init; } = new();
-        public string PrivacyPolicyUrl { get; init; } = "";
+
+        /// <summary>
+        /// Gets the url to the privacy policy for the bot.
+        /// </summary>
+        public string PrivacyPolicyUrl { get; init; } = string.Empty;
     }
 }

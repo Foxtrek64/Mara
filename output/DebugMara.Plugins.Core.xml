@@ -4,6 +4,40 @@
         <name>Mara.Plugins.Core</name>
     </assembly>
     <members>
+        <member name="T:Mara.Plugins.Core.Commands.AboutCommand">
+            <summary>
+            A command which provides information about the bot.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Commands.AboutCommand.#ctor(Remora.Discord.Commands.Feedback.Services.FeedbackService,Mara.Common.Discord.Feedback.IdentityInformationConfiguration,Remora.Discord.API.Abstractions.Rest.IDiscordRestUserAPI)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Commands.AboutCommand"/> class.
+            </summary>
+            <param name="feedbackService">The Command Feedback service.</param>
+            <param name="identityInformation">The bot's identity.</param>
+            <param name="userApi">A <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestUserAPI"/> for getting user information.</param>
+        </member>
+        <member name="M:Mara.Plugins.Core.Commands.AboutCommand.ShowBotInfoAsync">
+            <summary>
+            Provides an informational embed describing the bot.
+            </summary>
+            <returns>A <see cref="T:System.Threading.Tasks.Task`1"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="T:Mara.Plugins.Core.CoreConstants">
+            <summary>
+            A set of constants for the Core plugin.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.DismissableEmbedFooter">
+            <summary>
+            Gets a default footer that is used on dismissable embeds.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.Core.CorePlugin">
+            <summary>
+            Represents core functionality.
+            </summary>
+        </member>
         <member name="P:Mara.Plugins.Core.CorePlugin.Name">
             <inheritdoc />
         </member>
@@ -16,11 +50,67 @@
         <member name="M:Mara.Plugins.Core.CorePlugin.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <inheritdoc />
         </member>
-        <member name="M:Mara.Plugins.Core.CorePlugin.InitializeAsync(System.IServiceProvider)">
+        <member name="M:Mara.Plugins.Core.CorePlugin.InitializeAsync(System.IServiceProvider,System.Threading.CancellationToken)">
             <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.Core.Responders.DeleteRequestResponder">
+            <summary>
+            A responder which handles removing eligible embeds flagged with the X emoji.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.DeleteRequestResponder.#ctor(Remora.Discord.Rest.API.DiscordRestChannelAPI,Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.DeleteRequestResponder})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.DeleteRequestResponder"/> class.
+            </summary>
+            <param name="channelApi">An instance of <see cref="T:Remora.Discord.Rest.API.DiscordRestChannelAPI"/>.</param>
+            <param name="logger">A logger for this event handler.</param>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.DeleteRequestResponder.Handle(Remora.Discord.API.Gateway.Events.MessageReactionAdd,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Mara.Plugins.Core.Responders.ReadyResponder">
+            <summary>
+            Handles post-startup tasks, such as setting the bot presence and registering global slash commands.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.ReadyResponder.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.ReadyResponder},Remora.Discord.Gateway.DiscordGatewayClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.ReadyResponder"/> class.
+            </summary>
+            <param name="logger">A logger.</param>
+            <param name="gatewayClient">A gateway client.</param>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.ReadyResponder.Handle(Remora.Discord.API.Abstractions.Gateway.Events.IReady,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Mara.Plugins.Core.Responders.SlashCommandRegistrationResponder">
+            <summary>
+            Registers server-level slash commands.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.SlashCommandRegistrationResponder.#ctor(Remora.Discord.Commands.Services.SlashService,Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.SlashCommandRegistrationResponder})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.SlashCommandRegistrationResponder"/> class.
+            </summary>
+            <param name="slashService">The slash service.</param>
+            <param name="logger">A logger.</param>
         </member>
         <member name="M:Mara.Plugins.Core.Responders.SlashCommandRegistrationResponder.RespondAsync(Remora.Discord.API.Abstractions.Gateway.Events.IGuildCreate,System.Threading.CancellationToken)">
             <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.Core.Responders.UnknownEventResponder">
+            <summary>
+            An event responder which logs unknown events.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.UnknownEventResponder.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.UnknownEventResponder})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.UnknownEventResponder"/> class.
+            </summary>
+            <param name="logger">A logger for this event responder.</param>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.UnknownEventResponder.RespondAsync(Remora.Discord.API.Gateway.Events.UnknownEvent,System.Threading.CancellationToken)">
+            <inheritdoc/>
         </member>
     </members>
 </doc>

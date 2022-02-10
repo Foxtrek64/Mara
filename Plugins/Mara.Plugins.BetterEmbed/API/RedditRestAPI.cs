@@ -21,12 +21,9 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Mara.Plugins.BetterEmbeds.Models.Reddit;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Remora.Rest;
 using Remora.Results;
 
@@ -35,24 +32,30 @@ namespace Mara.Plugins.BetterEmbeds.API
     /// <inheritdoc />
     public sealed class RedditRestAPI : IRedditRestAPI
     {
-        public const string PostUrl = "https://www.reddit.com/r/{0}/comments/{1}/.json";
-        public const string ProfileUrl = "https://www.reddit.com/user/{0}/about.json";
+        /// <summary>
+        /// A format string for a reddit post url.
+        /// </summary>
+        internal const string PostUrl = "https://www.reddit.com/r/{0}/comments/{1}";
 
-        private readonly JsonSerializerOptions _serializerOptions;
-        private readonly ILogger<RedditRestAPI> _logger;
+        /// <summary>
+        /// A format string for a reddit profile url.
+        /// </summary>
+        internal const string ProfileUrl = "https://www.reddit.com/user/{0}";
+
+        /// <summary>
+        /// The link to the favicon used for reddit.com.
+        /// </summary>
+        internal const string RedditFavicon = "https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png";
+
         private readonly IRestHttpClient _restClient;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedditRestAPI"/> class.
         /// </summary>
         /// <param name="restClient">The rest client.</param>
-        /// <param name="serializerOptions">Serialization options.</param>
-        /// <param name="logger">A logger</param>
-        public RedditRestAPI(IRestHttpClient restClient, IOptions<JsonSerializerOptions> serializerOptions, ILogger<RedditRestAPI> logger)
+        public RedditRestAPI(IRestHttpClient restClient)
         {
             _restClient = restClient;
-            _serializerOptions = serializerOptions.Value;
-            _logger = logger;
         }
 
         /// <inheritdoc />

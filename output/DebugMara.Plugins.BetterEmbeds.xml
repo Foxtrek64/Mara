@@ -4,14 +4,85 @@
         <name>Mara.Plugins.BetterEmbeds</name>
     </assembly>
     <members>
-        <member name="M:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.GetRedditPostAsync(System.String,System.String,System.Boolean,System.Threading.CancellationToken)">
+        <member name="T:Mara.Plugins.BetterEmbeds.API.IRedditRestAPI">
+            <summary>
+            Provides a RestClient wrapper which accesses the Reddit API.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.API.IRedditRestAPI.GetRedditPostAsync(System.String,System.String,System.Boolean,System.Threading.CancellationToken)">
             <summary>
             Gets a post using the subreddit and post id.
             </summary>
             <param name="subredditName">The subreddit this post belongs to.</param>
             <param name="postId">The unique id of this post.</param>
+            <param name="allowNullReturn">Whether or not to allow an empty return value.</param>
             <param name="cancellationToken">The cancellation token for this operation.</param>
             <returns>A retrieval result which may or may not have succeeded.</returns>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.API.IRedditRestAPI.GetRedditUserAsync(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Gets a reddit user by username.
+            </summary>
+            <param name="username">The user's username.</param>
+            <param name="allowNullReturn">Whether or not to allow an empty return value.</param>
+            <param name="cancellationToken">The cancellation token for this operation.</param>
+            <returns>A retrieval result which may or may not have succeeded.</returns>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.API.RedditRestAPI">
+            <inheritdoc />
+        </member>
+        <member name="F:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.PostUrl">
+            <summary>
+            A format string for a reddit post url.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.ProfileUrl">
+            <summary>
+            A format string for a reddit profile url.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.RedditFavicon">
+            <summary>
+            The link to the favicon used for reddit.com.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.#ctor(Remora.Rest.IRestHttpClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.API.RedditRestAPI"/> class.
+            </summary>
+            <param name="restClient">The rest client.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.GetRedditPostAsync(System.String,System.String,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.API.RedditRestAPI.GetRedditUserAsync(System.String,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase">
+            <summary>
+            Provides base functionality for handling message embeds.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase},System.Text.RegularExpressions.Regex,Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI,Microsoft.Extensions.Options.IOptions{System.Text.Json.JsonSerializerOptions})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase"/> class.
+            </summary>
+            <param name="logger">An <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> for this instance.</param>
+            <param name="urlRegex">A <see cref="T:System.Text.RegularExpressions.Regex"/> for filtering the contents of the message.</param>
+            <param name="channelApi">The <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI"/>.</param>
+            <param name="jsonSerializerOptions">Json Serialization Options.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase.Handle(Remora.Discord.API.Abstractions.Gateway.Events.IMessageCreate,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.BetterEmbedHandlerBase.BuildEmbedAsync(System.Text.RegularExpressions.Match,Remora.Discord.API.Abstractions.Objects.IMessage,System.Threading.CancellationToken)">
+            <summary>
+            Builds an embed for the service.
+            </summary>
+            <param name="match">A <see cref="T:System.Text.RegularExpressions.Match"/> representing a link to the requested service.</param>
+            <param name="message">The message containing the link.</param>
+            <param name="cancellationToken">The cancellation token for this operation.</param>
+            <returns>A <see cref="T:Remora.Results.Result`1"/> containing an <see cref="T:Remora.Discord.API.Abstractions.Objects.IEmbed"/> or a reason why the operation failed.</returns>
         </member>
         <member name="T:Mara.Plugins.BetterEmbeds.BetterEmbedPlugin">
             <summary>
@@ -30,19 +101,484 @@
         <member name="M:Mara.Plugins.BetterEmbeds.BetterEmbedPlugin.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <inheritdoc />
         </member>
-        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.PostHint">
+        <member name="T:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder">
             <summary>
-            Not available or null - text
-            rich:video - get oembed
-            hosted:video - v.reddit video
+            A service which builds embeds quoting users.
             </summary>
         </member>
-        <member name="M:Mara.Plugins.BetterEmbeds.Services.IQuoteService.BuildQuoteEmbedAsync(Remora.Discord.API.Abstractions.Objects.IMessage,Remora.Discord.API.Abstractions.Objects.IUser)">
+        <member name="F:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.JumpUrl">
             <summary>
-            Build an embed quote for the provided message. Returns null if the message could not be quoted.
+            Represents a url which links directly to a Discord message.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.Message">
+            <summary>
+            Gets the message this builder will be quoting.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.Requester">
+            <summary>
+            Gets the user who requested the quote.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.SourceChannel">
+            <summary>
+            Gets the channel the quoted message belongs to.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.DestinationChannel">
+            <summary>
+            Gets the channel the quoted message will be sent into.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.SourceGuild">
+            <summary>
+            Gets the Guild which contains <see cref="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.SourceChannel"/>.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.#ctor(Remora.Discord.API.Abstractions.Objects.IMessage,Remora.Discord.API.Abstractions.Objects.IUser,Remora.Discord.API.Abstractions.Objects.IChannel,Remora.Discord.API.Abstractions.Objects.IChannel,Remora.Discord.API.Abstractions.Objects.IGuild)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder"/> class.
             </summary>
             <param name="message">The message to quote.</param>
-            <param name="executingUser">The user that is doing the quoting.</param>
+            <param name="requester">The user who requested the message be quoted.</param>
+            <param name="sourceChannel">The channel the quoted message belongs to.</param>
+            <param name="destinationChannel">The channel the quoted message will be sent to.</param>
+            <param name="guild">The guild which contains <see cref="P:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.SourceChannel"/>.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.Build">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.Validate">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.QuoteEmbedBuilder.MessageHasQuoteEmbed(Remora.Discord.API.Abstractions.Objects.IMessage,Remora.Discord.API.Abstractions.Objects.IEmbed@)">
+            <summary>
+            Inspects a message's attributes to see if one or more is a quote.
+            </summary>
+            <param name="message">The message to inspect.</param>
+            <param name="embed">The first instance of a quote embed found, if any.</param>
+            <returns>True if a quote embed was found; otherwise, false.</returns>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder">
+            <summary>
+            A service which builds an embed based off a reddit post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.RedditPost">
+            <summary>
+            Gets the <see cref="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost"/> to use to build the embed.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.RedditUser">
+            <summary>
+            Gets the <see cref="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditUser"/> who created the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.AllowNSFW">
+            <summary>
+            Gets a value indicating whether an embed should be built if the reddit post is not safe for work.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.#ctor(Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost,Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditUser,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder"/> class.
+            </summary>
+            <param name="redditPost">The post to use to build the embed.</param>
+            <param name="redditUser">The user who created the post.</param>
+            <param name="allowNSFW">Whether to build an embed for a NSFW post.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.Build">
+            <inheritdoc/>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Builders.RedditEmbedBuilder.Validate">
+            <summary>
+            Ensures that the embed can be built based on the NSFW status of the post.
+            </summary>
+            <returns>True if the embed can be built; otherwise, false.</returns>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.MessageHandlers.QuoteEmbedHandler">
+            <summary>
+            Handles messages containing Discord Message links.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.MessageHandlers.QuoteEmbedHandler.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.BetterEmbeds.MessageHandlers.QuoteEmbedHandler},Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI,Remora.Discord.API.Abstractions.Rest.IDiscordRestGuildAPI,Microsoft.Extensions.Options.IOptions{System.Text.Json.JsonSerializerOptions})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.MessageHandlers.QuoteEmbedHandler"/> class.
+            </summary>
+            <param name="logger">A <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> for this instance.</param>
+            <param name="channelApi">The <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI"/>.</param>
+            <param name="guildApi">The <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestGuildAPI"/>.</param>
+            <param name="jsonOptions">The <see cref="T:System.Text.Json.JsonSerializerOptions"/>.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.MessageHandlers.QuoteEmbedHandler.BuildEmbedAsync(System.Text.RegularExpressions.Match,Remora.Discord.API.Abstractions.Objects.IMessage,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.MessageHandlers.RedditEmbedHandler">
+            <summary>
+            Handles messages containing reddit post links.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.MessageHandlers.RedditEmbedHandler.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.BetterEmbeds.MessageHandlers.RedditEmbedHandler},Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI,Mara.Plugins.BetterEmbeds.API.IRedditRestAPI,Microsoft.Extensions.Options.IOptions{System.Text.Json.JsonSerializerOptions})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.BetterEmbeds.MessageHandlers.RedditEmbedHandler"/> class.
+            </summary>
+            <param name="logger">A <see cref="T:Microsoft.Extensions.Logging.ILogger`1"/> for this instance.</param>
+            <param name="channelApi">The <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestChannelAPI"/>.</param>
+            <param name="redditApi">The <see cref="T:Mara.Plugins.BetterEmbeds.API.IRedditRestAPI"/>.</param>
+            <param name="jsonOptions">The <see cref="T:System.Text.Json.JsonSerializerOptions"/>.</param>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.MessageHandlers.RedditEmbedHandler.BuildEmbedAsync(System.Text.RegularExpressions.Match,Remora.Discord.API.Abstractions.Objects.IMessage,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed">
+            <summary>
+            An OEmbed object.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.Type">
+            <summary>
+            Gets the resource type.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.Version">
+            <summary>
+            Gets the OEmbed version number.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.Title">
+            <summary>
+            Gets the title of the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.AuthorName">
+            <summary>
+            Gets the name of the author or owner of the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.AuthorUrl">
+            <summary>
+            Gets the url of the author or owner of the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ProviderName">
+            <summary>
+            Gets the name of the provider of the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ProviderUrl">
+            <summary>
+            Gets the url of the provider of the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.CacheAge">
+            <summary>
+            Gets the suggested cache lifetime for this resource, in seconds.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ThumbnailUrl">
+            <summary>
+            Gets the url to a thumbnail image representing the resource.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ThumbnailWidth">
+            <summary>
+            Gets the width of the thumbnail. Must be present if the <see cref="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ThumbnailUrl"/> is present.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ThumbnailHeight">
+            <summary>
+            Gets the width of the thumbnail. Must be present if the <see cref="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.ThumbnailUrl"/> is present.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.Photo">
+            <summary>
+            Gets the photo contained by this resource, if any.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IOEmbed.Video">
+            <summary>
+            Gets the video contained by this resource, if any.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.IPhoto">
+            <summary>
+            A resource containing a static photo.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IPhoto.Url">
+            <summary>
+            Gets the source url of the image.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IPhoto.Width">
+            <summary>
+            Gets the width of the image in pixels.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IPhoto.Height">
+            <summary>
+            Gets the height of the image in pixels.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.IVideo">
+            <summary>
+            A resource containing a playable video.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IVideo.Html">
+            <summary>
+            Gets the HTML required to embed a video player.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IVideo.Width">
+            <summary>
+            Gets the width in pixels of the video player.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.OEmbed.IVideo.Height">
+            <summary>
+            Gets the height in pixels of the video player.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.OEmbed">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.OEmbed.OEmbed.#ctor(System.String,System.Version,Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.Int32},Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{System.Int32},Remora.Rest.Core.Optional{System.Int32},Remora.Rest.Core.Optional{Mara.Plugins.BetterEmbeds.Models.OEmbed.IPhoto},Remora.Rest.Core.Optional{Mara.Plugins.BetterEmbeds.Models.OEmbed.IVideo})">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.Photo">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.OEmbed.Photo.#ctor(System.String,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.Video">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.OEmbed.Video.#ctor(System.String,System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeConverter">
+            <summary>
+            A <see cref="T:System.Text.Json.Serialization.JsonConverter`1"/> responsible for converting a number of seconds since the Unix epoch to a <see cref="T:System.DateTime"/>.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeConverter.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeConverter.Write(System.Text.Json.Utf8JsonWriter,System.DateTime,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeOffsetConverter">
+            <summary>
+            A <see cref="T:System.Text.Json.Serialization.JsonConverter`1"/> responsible for converting a number of seconds since the Unix epoch to a <see cref="T:System.DateTimeOffset"/>.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeOffsetConverter.CanConvert(System.Type)">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeOffsetConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Converters.UtcTimestampDateTimeOffsetConverter.Write(System.Text.Json.Utf8JsonWriter,System.DateTimeOffset,System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IMedia">
+            <summary>
+            A media object which contains a video, either hosted locally or externally.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IMedia.RedditVideo">
+            <summary>
+            Gets the <see cref="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IMedia.RedditVideo"/>.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IMedia.ExternalVideo">
+            <summary>
+            Gets an <see cref="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.OEmbed"/> containing an external video.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost">
+            <summary>
+            A post on Reddit.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Id">
+            <summary>
+            Gets the unique id of the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Title">
+            <summary>
+            Gets the title of the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Subreddit">
+            <summary>
+            Gets the name of the subreddit this post belongs to.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Author">
+            <summary>
+            Gets the name of the author of the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Url">
+            <summary>
+            Gets the URI portion of the link, beginning with r/.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Permalink">
+            <summary>
+            Gets the permalink to the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Text">
+            <summary>
+            Gets the text of the post, if any.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Score">
+            <summary>
+            Gets the current score of the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.UpvoteRatio">
+            <summary>
+            Gets a ratio of upvotes to downvotes.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.PostDate">
+            <summary>
+            Gets the date the post was created.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.PostFlair">
+            <summary>
+            Gets the post's flair, if any.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Media">
+            <summary>
+            Gets the embedded media of a post, if any.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.IsVideo">
+            <summary>
+            Gets a value indicating whether a post contains a video.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.PostHint">
+            <summary>
+            Gets a hint indicating what kind of media is contained in the post.
+            <list type="table">
+                <item>
+                    <term>Not available or null</term>
+                    <description>Text</description>
+                </item>
+                <item>
+                    <term>rich:video</term>
+                    <description><see cref="T:Mara.Plugins.BetterEmbeds.Models.OEmbed.OEmbed"/></description>
+                </item>
+                <item>
+                    <term>hosted:video</term>
+                    <description><see cref="T:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditVideo"/></description>
+                </item>
+            </list>
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.WhitelistStatus">
+            <summary>
+            Gets a flag indicating whether the post is NSFW or a spoiler.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.Thumbnail">
+            <summary>
+            Gets the thumbnail for the post.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.ThumbnailWidth">
+            <summary>
+            Gets the width of the thumbnail.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditPost.ThumbnailHeight">
+            <summary>
+            Gets the height of the thumbnail.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditUser">
+            <summary>
+            A Reddit user.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditUser.DisplayNamePrefixed">
+            <summary>
+            Gets the user's display name prefixed with u/.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditUser.IconImage">
+            <summary>
+            Gets a url to the user's image.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo">
+            <summary>
+            Represents a video hosted on Reddit.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo.Url">
+            <summary>
+            Gets the url to the video on the redditmedia cdn.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo.Height">
+            <summary>
+            Gets the height of the video.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo.Width">
+            <summary>
+            Gets the width of the video.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo.Duration">
+            <summary>
+            Gets the duration of the video.
+            </summary>
+        </member>
+        <member name="P:Mara.Plugins.BetterEmbeds.Models.Reddit.IRedditVideo.IsGif">
+            <summary>
+            Gets a value indicating whether the video is actually an animated image.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.Media">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.Media.#ctor(Remora.Rest.Core.Optional{Mara.Plugins.BetterEmbeds.Models.Reddit.RedditVideo},Remora.Rest.Core.Optional{Mara.Plugins.BetterEmbeds.Models.OEmbed.OEmbed})">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditPost">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditPost.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,Remora.Rest.Core.Optional{System.String},System.Int32,System.Double,System.DateTime,Remora.Rest.Core.Optional{System.String},Remora.Rest.Core.Optional{Mara.Plugins.BetterEmbeds.Models.Reddit.Media},System.Boolean,Remora.Rest.Core.Optional{System.String},System.String,System.String,Remora.Rest.Core.Optional{System.Nullable{System.Int32}},Remora.Rest.Core.Optional{System.Nullable{System.Int32}})">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditUser">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditUser.#ctor(System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="T:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditVideo">
+            <inheritdoc />
+        </member>
+        <member name="M:Mara.Plugins.BetterEmbeds.Models.Reddit.RedditVideo.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <inheritdoc />
         </member>
     </members>
 </doc>
