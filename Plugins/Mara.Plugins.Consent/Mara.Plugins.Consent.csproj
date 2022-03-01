@@ -12,4 +12,9 @@
     <PackageReference Include="Remora.Plugins" Version="3.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mara.Common\Mara.Common.csproj" />
+    <ProjectReference Include="..\Mara.Plugins.Core\Mara.Plugins.Core.csproj" />
+  </ItemGroup>
+
 </Project>
