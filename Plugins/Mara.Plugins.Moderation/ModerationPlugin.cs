@@ -31,8 +31,6 @@ using Remora.Plugins.Abstractions;
 using Remora.Plugins.Abstractions.Attributes;
 using Remora.Results;
 
-[assembly:RemoraPlugin(typeof(ModerationPlugin))]
-
 namespace Mara.Plugins.Moderation
 {
     /// <summary>
@@ -64,7 +62,7 @@ namespace Mara.Plugins.Moderation
         /// <inheritdoc />
         public Task<Result> MigrateAsync(IServiceProvider serviceProvider, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Result.FromSuccess());
         }
     }
 }

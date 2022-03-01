@@ -1,5 +1,5 @@
 ﻿//
-//  GuildRequiredError.cs
+//  Attributes.cs
 //
 //  Author:
 //       LuzFaltex Contributors
@@ -21,13 +21,9 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-using Mara.Common.Discord.Feedback.Errors;
+using System.Runtime.CompilerServices;
+using Mara.Plugins.Consent;
+using Remora.Plugins.Abstractions.Attributes;
 
-namespace Mara.Common.Results
-{
-    /// <summary>
-    /// An error arising from a non-command function which requires a guild context.
-    /// </summary>
-    /// <param name="Message">More information about why the operation failed.</param>
-    public record GuildRequiredError(string Message) : UserError(Message, true);
-}
+[assembly: RemoraPlugin(typeof(ConsentPlugin))]
+[assembly: InternalsVisibleTo("Mara.Plugins.Consent.Tests")]

@@ -1,5 +1,5 @@
 ﻿//
-//  GuildRequiredError.cs
+//  LongExtensions.cs
 //
 //  Author:
 //       LuzFaltex Contributors
@@ -21,13 +21,30 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-using Mara.Common.Discord.Feedback.Errors;
+using System.Runtime.InteropServices;
+using System.Text;
 
-namespace Mara.Common.Results
+namespace Mara.Common.Extensions
 {
     /// <summary>
-    /// An error arising from a non-command function which requires a guild context.
+    /// Provides extensions to <see cref="long"/>.
     /// </summary>
-    /// <param name="Message">More information about why the operation failed.</param>
-    public record GuildRequiredError(string Message) : UserError(Message, true);
+    public static class LongExtensions
+    {
+        [DllImport("Shlwapi.dll", CharSet = CharSet.Unicode)]
+        private static extern long StrFormatByteSize(long fileSize, StringBuilder buffer, int bufferSize);
+
+        /// <summary>
+        /// Converts a long value into a formatted string representing file size.
+        /// </summary>
+        /// <param name="value">The long to convert.</param>
+        /// <returns>A formatted file size string.</returns>
+        public static string ToFileSize(this long value)
+        {
+            StringBuilder sb = new(11);
+            StrFormatByteSize(value, sb, sb.Capacity);
+
+            return sb.ToString();
+        }
+    }
 }

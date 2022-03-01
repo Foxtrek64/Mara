@@ -26,7 +26,6 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Mara.Plugins.BetterEmbeds;
 using Mara.Plugins.BetterEmbeds.API;
 using Mara.Plugins.BetterEmbeds.MessageHandlers;
 using Mara.Plugins.BetterEmbeds.Models.OEmbed;
@@ -37,12 +36,9 @@ using Polly;
 using Polly.Contrib.WaitAndRetry;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Plugins.Abstractions;
-using Remora.Plugins.Abstractions.Attributes;
 using Remora.Rest.Extensions;
 using Remora.Rest.Results;
 using Remora.Results;
-
-[assembly: RemoraPlugin(typeof(BetterEmbedPlugin))]
 
 namespace Mara.Plugins.BetterEmbeds
 {
@@ -52,7 +48,7 @@ namespace Mara.Plugins.BetterEmbeds
     public class BetterEmbedPlugin : PluginDescriptor
     {
         /// <inheritdoc />
-        public override string Name => nameof(BetterEmbeds);
+        public override string Name => "BetterEmbeds";
 
         /// <inheritdoc />
         public override Version Version => Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0);
@@ -71,14 +67,10 @@ namespace Mara.Plugins.BetterEmbeds
                 .AddRestHttpClient<RestResultError<HttpResultError>>("Reddit")
                 .ConfigureHttpClient((services, client) =>
                 {
-                    var assemblyName = Assembly.GetExecutingAssembly().GetName();
-                    var name = assemblyName.Name ??= "LuzFaltex.Mara";
-                    var version = assemblyName.Version ?? new Version(1, 0, 0);
-
                     client.BaseAddress = new("https://www.reddit.com/");
                     client.DefaultRequestHeaders.UserAgent.Add
                     (
-                        new System.Net.Http.Headers.ProductInfoHeaderValue(name, version.ToString())
+                        new System.Net.Http.Headers.ProductInfoHeaderValue("LuzFaltex.Mara.BetterEmbeds", Version.ToString())
                     );
                 })
                 .AddTransientHttpErrorPolicy
@@ -91,8 +83,8 @@ namespace Mara.Plugins.BetterEmbeds
                     .HandleResult<HttpResponseMessage>(r => r.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                     .WaitAndRetryAsync
                     (
-                        1,
-                        (iteration, response, context) =>
+                        retryCount: 1,
+                        sleepDurationProvider: (iteration, response, context) =>
                         {
                             // If no response, try again in 1 second.
                             if (response.Result == default)
@@ -105,7 +97,7 @@ namespace Mara.Plugins.BetterEmbeds
                                 ? TimeSpan.FromSeconds(1)
                                 : response.Result.Headers.RetryAfter.Delta);
                         },
-                        (_, _, _, _) => Task.CompletedTask
+                        onRetryAsync: (_, _, _, _) => Task.CompletedTask
                     )
                 );
 

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Mara.Common.Discord.Feedback;
@@ -90,6 +91,20 @@ namespace Mara.Runtime
                     }
                 })
                 .UseDefaultServiceProvider(x => x.ValidateScopes = true)
+                .ConfigureLogging((context, builder) =>
+                {
+                    Serilog.Core.Logger seriLogger = new LoggerConfiguration()
+                        .MinimumLevel.Verbose()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .ReadFrom.Configuration(context.Configuration)
+                        .Enrich.FromLogContext()
+                        .WriteTo.Console(outputTemplate: LogOutputTemplate, theme: AnsiConsoleTheme.Code)
+                        .WriteTo.File(Path.Combine(LogDir, "Execution_.log"), outputTemplate: LogOutputTemplate, rollingInterval: RollingInterval.Day)
+                        .CreateLogger();
+
+                    builder.AddSerilog(seriLogger);
+                    Log.Logger = seriLogger;
+                })
                 .ConfigureServices((context, services) =>
                 {
                     var pluginServiceOptions = new PluginServiceOptions(new List<string>() { "./Plugins" });
@@ -99,7 +114,24 @@ namespace Mara.Runtime
                     var configurePluginsResult = plugins.ConfigureServices(services);
                     if (!configurePluginsResult.IsSuccess)
                     {
-                        Console.WriteLine($"Failed to load plugins! {configurePluginsResult.Error.Message}");
+                        if (configurePluginsResult.Error is AggregateError aggregateError)
+                        {
+                            var sb = new StringBuilder();
+                            foreach (var error in aggregateError.Errors)
+                            {
+                                if (error.IsSuccess)
+                                {
+                                    continue;
+                                }
+                                sb.AppendLine($"  {error.Error!.Message}");
+                            }
+                            Log.Error("Failed to load plugins!\n{ChildMessages}", sb.ToString());
+                        }
+                        else
+                        {
+                            Log.Error("Failed to load plugins: {error}", configurePluginsResult.Error.Message);
+                        }
+
                         if (configurePluginsResult.Error is ExceptionError exe)
                         {
                             Console.WriteLine(exe.Exception.ToString());
@@ -108,7 +140,6 @@ namespace Mara.Runtime
 
                     services.Configure<MaraConfig>(context.Configuration);
                     services.AddSingleton(pluginService);
-                    services.AddSingleton<IdentityInformationConfiguration>();
 
                     Debug.Assert(!string.IsNullOrEmpty(context.Configuration[nameof(MaraConfig.DiscordToken)]), $"The '{nameof(MaraConfig.DiscordToken)}' must not be null or empty.");
 
@@ -130,20 +161,6 @@ namespace Mara.Runtime
                             GatewayIntents.GuildMessages |
                             GatewayIntents.Guilds |
                             GatewayIntents.GuildWebhooks);
-                })
-                .ConfigureLogging((context, builder) =>
-                {
-                    Serilog.Core.Logger seriLogger = new LoggerConfiguration()
-                        .MinimumLevel.Verbose()
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        .ReadFrom.Configuration(context.Configuration)
-                        .Enrich.FromLogContext()
-                        .WriteTo.Console(outputTemplate: LogOutputTemplate, theme: AnsiConsoleTheme.Code)
-                        .WriteTo.File(Path.Combine(LogDir, "Execution_.log"), outputTemplate: LogOutputTemplate, rollingInterval: RollingInterval.Day)
-                        .CreateLogger();
-
-                    builder.AddSerilog(seriLogger);
-                    Log.Logger = seriLogger;
                 });
 
             hostBuilder = (Debugger.IsAttached && Environment.UserInteractive)
@@ -151,19 +168,6 @@ namespace Mara.Runtime
                 : hostBuilder.UseWindowsService();
 
             using var host = hostBuilder.Build();
-
-            if (!File.Exists(Path.Combine(AppDir, "appsettings.json")))
-            {
-                var config = MaraConfig.Default;
-                await File.WriteAllTextAsync
-                (
-                    Path.Combine(AppDir, "appsettings.json"),
-                    JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true })
-                );
-
-                Console.WriteLine($"Default app config written to {Path.Combine(AppDir, "appsettings.json")}. Please provide your app configurations here or in environment variables, then restart the bot.");
-                return 0;
-            }
 
             try
             {

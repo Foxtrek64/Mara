@@ -37,7 +37,7 @@ namespace Mara.Common.Models
         {
             DiscordToken = string.Empty,
             ConnectionStrings = new() { ["DbConnection"] = string.Empty },
-            PrivacyPolicyUrl = string.Empty
+            BotWebsiteUrl = string.Empty
         };
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace Mara.Common.Models
         public Dictionary<string, string> ConnectionStrings { get; init; } = new();
 
         /// <summary>
-        /// Gets the url to the privacy policy for the bot.
+        /// Gets the bot url.
         /// </summary>
-        public string PrivacyPolicyUrl { get; init; } = string.Empty;
+        public string BotWebsiteUrl { get; init; } = string.Empty;
     }
 }

@@ -23,6 +23,7 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Mara.Common.Extensions;
@@ -113,14 +114,34 @@ namespace Mara.Runtime
                 var initResult = await pluginTree.InitializeAsync(_scope.ServiceProvider, stoppingToken);
                 if (!initResult.IsSuccess)
                 {
+                    if (initResult.Error is AggregateError aggregateError)
+                    {
+                        var sb = new StringBuilder();
+                        foreach (var error in aggregateError.Errors)
+                        {
+                            if (error.IsSuccess)
+                            {
+                                continue;
+                            }
+                            sb.AppendLine($"  {error.Error!.Message}");
+                        }
+                        _logger.LogError("{Message}:\n{ChildMessages}", initResult.Error.Message, sb.ToString());
+                    }
+                    else
+                    {
+                        _logger.LogError("An error occurred while initializing plugins: {error}", initResult.Error.Message);
+                    }
+
                     return initResult;
                 }
 
+                /*
                 var migrateResult = await pluginTree.MigrateAsync(_scope.ServiceProvider, stoppingToken);
                 if (migrateResult.IsSuccess)
                 {
                     return migrateResult;
                 }
+                */
 
                 return Result.FromSuccess();
             }

@@ -1,5 +1,5 @@
 ﻿//
-//  GuildRequiredError.cs
+//  IConsentService.cs
 //
 //  Author:
 //       LuzFaltex Contributors
@@ -21,13 +21,21 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-using Mara.Common.Discord.Feedback.Errors;
+using System.Threading.Tasks;
+using Remora.Rest.Core;
 
-namespace Mara.Common.Results
+namespace Mara.Plugins.Consent.Services
 {
     /// <summary>
-    /// An error arising from a non-command function which requires a guild context.
+    /// Provides access to utilities for determining, granting, and revoking consent.
     /// </summary>
-    /// <param name="Message">More information about why the operation failed.</param>
-    public record GuildRequiredError(string Message) : UserError(Message, true);
+    public interface IConsentService
+    {
+        /// <summary>
+        /// Indicates whether the specified user has granted consent.
+        /// </summary>
+        /// <param name="userId">The unique id of the user.</param>
+        /// <returns>True if the user has granted consent; otherwise, false if consent has not been granted or has been revoked.</returns>
+        public Task<bool> GrantedConsent(Snowflake userId);
+    }
 }

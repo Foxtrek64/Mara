@@ -9,13 +9,14 @@
             A command which provides information about the bot.
             </summary>
         </member>
-        <member name="M:Mara.Plugins.Core.Commands.AboutCommand.#ctor(Remora.Discord.Commands.Feedback.Services.FeedbackService,Mara.Common.Discord.Feedback.IdentityInformationConfiguration,Remora.Discord.API.Abstractions.Rest.IDiscordRestUserAPI)">
+        <member name="M:Mara.Plugins.Core.Commands.AboutCommand.#ctor(Remora.Discord.Commands.Feedback.Services.FeedbackService,Remora.Discord.API.Abstractions.Rest.IDiscordRestUserAPI,Microsoft.Extensions.Caching.Memory.IMemoryCache,Microsoft.Extensions.Options.IOptions{Mara.Common.Models.MaraConfig})">
             <summary>
             Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Commands.AboutCommand"/> class.
             </summary>
             <param name="feedbackService">The Command Feedback service.</param>
-            <param name="identityInformation">The bot's identity.</param>
             <param name="userApi">A <see cref="T:Remora.Discord.API.Abstractions.Rest.IDiscordRestUserAPI"/> for getting user information.</param>
+            <param name="memoryCache">A memory cache.</param>
+            <param name="config">The bot config.</param>
         </member>
         <member name="M:Mara.Plugins.Core.Commands.AboutCommand.ShowBotInfoAsync">
             <summary>
@@ -31,6 +32,31 @@
         <member name="F:Mara.Plugins.Core.CoreConstants.DismissableEmbedFooter">
             <summary>
             Gets a default footer that is used on dismissable embeds.
+            </summary>
+        </member>
+        <member name="T:Mara.Plugins.Core.CoreConstants.CacheKeys">
+            <summary>
+            A collection of keys for IMemoryCache objects.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.BotUser">
+            <summary>
+            A cache key for storing and retrieving the current bot user.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.CurrentApplication">
+            <summary>
+            A cache key for storing and retrieving the current application.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.ShardNumber">
+            <summary>
+            A cache key for storing and retrieving the current shard number.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.Uptime">
+            <summary>
+            A cache key for storing and retrieving the bot's up time.
             </summary>
         </member>
         <member name="T:Mara.Plugins.Core.CorePlugin">
@@ -68,17 +94,32 @@
         <member name="M:Mara.Plugins.Core.Responders.DeleteRequestResponder.Handle(Remora.Discord.API.Gateway.Events.MessageReactionAdd,System.Threading.CancellationToken)">
             <inheritdoc/>
         </member>
+        <member name="T:Mara.Plugins.Core.Responders.PostExectionResponder">
+            <summary>
+            A post-execution event responder which handles alerting the user to errors.
+            </summary>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.PostExectionResponder.#ctor(Remora.Discord.Commands.Feedback.Services.FeedbackService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.PostExectionResponder"/> class.
+            </summary>
+            <param name="feedback">A feedback service.</param>
+        </member>
+        <member name="M:Mara.Plugins.Core.Responders.PostExectionResponder.AfterExecutionAsync(Remora.Discord.Commands.Contexts.ICommandContext,Remora.Results.IResult,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
         <member name="T:Mara.Plugins.Core.Responders.ReadyResponder">
             <summary>
             Handles post-startup tasks, such as setting the bot presence and registering global slash commands.
             </summary>
         </member>
-        <member name="M:Mara.Plugins.Core.Responders.ReadyResponder.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.ReadyResponder},Remora.Discord.Gateway.DiscordGatewayClient)">
+        <member name="M:Mara.Plugins.Core.Responders.ReadyResponder.#ctor(Microsoft.Extensions.Logging.ILogger{Mara.Plugins.Core.Responders.ReadyResponder},Remora.Discord.Gateway.DiscordGatewayClient,Microsoft.Extensions.Caching.Memory.IMemoryCache)">
             <summary>
             Initializes a new instance of the <see cref="T:Mara.Plugins.Core.Responders.ReadyResponder"/> class.
             </summary>
             <param name="logger">A logger.</param>
             <param name="gatewayClient">A gateway client.</param>
+            <param name="memoryCache">A memory cache which will store the ready event.</param>
         </member>
         <member name="M:Mara.Plugins.Core.Responders.ReadyResponder.Handle(Remora.Discord.API.Abstractions.Gateway.Events.IReady,System.Threading.CancellationToken)">
             <inheritdoc/>

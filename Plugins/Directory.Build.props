@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <DocumentationFile>..\..\output\$(Configuration)$(MSBuildProjectName).xml</DocumentationFile>
-    <OutputPath>..\..\output\$(Configuration)</OutputPath>
+    <OutputPath>..\..\output\$(Configuration)\Plugins\</OutputPath>
   </PropertyGroup>
 
 </Project>

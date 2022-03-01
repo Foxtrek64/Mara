@@ -28,5 +28,5 @@ namespace Mara.Common.Discord.Feedback.Errors
     /// <summary>
     /// Represents an error on the users part which should be relayed to them.
     /// </summary>
-    public partial record UserError(string Message) : ResultError(Message);
+    public partial record UserError(string Message, bool IsError) : ResultError(Message);
 }

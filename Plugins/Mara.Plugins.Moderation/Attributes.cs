@@ -1,5 +1,5 @@
 ﻿//
-//  ChannelCreatedNotification.cs
+//  Attributes.cs
 //
 //  Author:
 //       LuzFaltex Contributors
@@ -21,11 +21,9 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-using MediatR;
-using Remora.Discord.API.Abstractions.Gateway.Events;
+using System.Runtime.CompilerServices;
+using Mara.Plugins.Moderation;
+using Remora.Plugins.Abstractions.Attributes;
 
-namespace Mara.Plugins.Mediator.Messaging.Notifications.Channels
-{
-    /// <inheritdoc />
-    public record ChannelCreatedNotification(IChannelCreate ChannelCreated) : INotification;
-}
+[assembly: RemoraPlugin(typeof(ModerationPlugin))]
+[assembly: InternalsVisibleTo("Mara.Plugins.Moderation.Tests")]

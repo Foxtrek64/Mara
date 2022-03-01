@@ -21,17 +21,26 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading.Tasks;
-using Mara.Common.Discord.Feedback;
+using Mara.Common.Discord;
+using Mara.Common.Extensions;
+using Mara.Common.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API;
+using Remora.Discord.API.Abstractions.Gateway.Commands;
+using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Extensions.Embeds;
 using Remora.Results;
+
+using CacheKeys = Mara.Plugins.Core.CoreConstants.CacheKeys;
 
 namespace Mara.Plugins.Core.Commands
 {
@@ -41,20 +50,23 @@ namespace Mara.Plugins.Core.Commands
     public sealed class AboutCommand : CommandGroup
     {
         private readonly FeedbackService _feedbackService;
-        private readonly IdentityInformationConfiguration _identityInformation;
         private readonly IDiscordRestUserAPI _userApi;
+        private readonly IMemoryCache _memoryCache;
+        private readonly MaraConfig _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AboutCommand"/> class.
         /// </summary>
         /// <param name="feedbackService">The Command Feedback service.</param>
-        /// <param name="identityInformation">The bot's identity.</param>
         /// <param name="userApi">A <see cref="IDiscordRestUserAPI"/> for getting user information.</param>
-        public AboutCommand(FeedbackService feedbackService, IdentityInformationConfiguration identityInformation, IDiscordRestUserAPI userApi)
+        /// <param name="memoryCache">A memory cache.</param>
+        /// <param name="config">The bot config.</param>
+        public AboutCommand(FeedbackService feedbackService, IDiscordRestUserAPI userApi, IMemoryCache memoryCache, IOptions<MaraConfig> config)
         {
             _feedbackService = feedbackService;
-            _identityInformation = identityInformation;
             _userApi = userApi;
+            _memoryCache = memoryCache;
+            _config = config.Value;
         }
 
         /// <summary>
@@ -63,15 +75,22 @@ namespace Mara.Plugins.Core.Commands
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
         [Command("about")]
         [Description("Provides information about the bot.")]
-        public async Task<IResult> ShowBotInfoAsync()
+        public async Task<Result<IMessage>> ShowBotInfoAsync()
         {
-            var embedBuilder = new EmbedBuilder()
-                .WithTitle("Mara")
-                .WithUrl("https://mara.luzfaltex.com")
-                .WithColour(Color.Pink)
-                .WithDescription("A custom-tailored Discord moderation bot by LuzFaltex.");
+            var application = _memoryCache.Get<IApplication>(CacheKeys.CurrentApplication);
 
-            if (_identityInformation.Application.Team is { } team)
+            var embedBuilder = new EmbedBuilder()
+                .WithTitle(application.Name)
+                .WithUrl(_config.BotWebsiteUrl)
+                .WithColour(Color.Pink)
+                .WithDescription(application.Description);
+
+            if (application is null)
+            {
+                return Result<IMessage>.FromError(new NotFoundError("Could not retrieve owner information."));
+            }
+
+            if (application.Team is { } team)
             {
                 var avatarUrlResult = CDN.GetTeamIconUrl(team, imageSize: 256);
 
@@ -91,8 +110,12 @@ namespace Mara.Plugins.Core.Commands
             }
             else
             {
-                var ownerId = _identityInformation.Application.Owner!.ID.Value;
-                var user = await _userApi.GetUserAsync(ownerId, CancellationToken);
+                if (application.Owner is not IPartialUser owner)
+                {
+                    return Result<IMessage>.FromError(new NotFoundError("Could not retrieve owner information."));
+                }
+
+                var user = await _userApi.GetUserAsync(owner.ID.Value, CancellationToken);
                 if (user.IsSuccess)
                 {
                     embedBuilder = embedBuilder.WithAuthor(user.Entity);
@@ -101,13 +124,27 @@ namespace Mara.Plugins.Core.Commands
 
             embedBuilder.AddField("Version", typeof(CorePlugin).Assembly.GetName().Version?.ToString(3) ?? "1.0.0");
 
+            if (_memoryCache.TryGetValue<IShardIdentification>(CacheKeys.ShardNumber, out var shardNumber))
+            {
+                embedBuilder.AddField("Shard", $"{shardNumber.ShardID}/{shardNumber.ShardCount}");
+            }
+            else
+            {
+                embedBuilder.AddField("Shard", "Unsharded.");
+            }
+
+            var uptime = _memoryCache.Get<DateTimeOffset>(CacheKeys.StartupTime);
+            embedBuilder.AddField("Uptime", FormatUtilities.DynamicTimeStamp(uptime, FormatUtilities.TimeStampStyle.LongTime));
+
+            embedBuilder.AddField("Memory Utilization", GC.GetGCMemoryInfo().TotalCommittedBytes.ToFileSize());
+
             var buildResult = embedBuilder.Build();
             if (buildResult.IsDefined(out var embed))
             {
                 return await _feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
             }
 
-            return Result.FromError(buildResult);
+            return Result<IMessage>.FromError(buildResult);
         }
     }
 }

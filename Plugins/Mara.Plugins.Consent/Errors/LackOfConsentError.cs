@@ -1,5 +1,5 @@
 ﻿//
-//  IdentityInformationConfiguration.cs
+//  LackOfConsentError.cs
 //
 //  Author:
 //       LuzFaltex Contributors
@@ -22,14 +22,12 @@
 //
 
 using Remora.Discord.API.Abstractions.Objects;
-using Remora.Rest.Core;
+using Remora.Results;
 
-namespace Mara.Common.Discord.Feedback
+namespace Mara.Plugins.Consent.Errors
 {
     /// <summary>
-    /// Provides information about the identity of the current application.
+    /// Indicates an error returned when a user has not granted consent or that consent has been revoked.
     /// </summary>
-    /// <param name="Id">Id of the bot.</param>
-    /// <param name="Application">The application behind the bot.</param>
-    public sealed record IdentityInformationConfiguration(Snowflake Id, IApplication Application);
+    public sealed record LackOfConsentError(IUser User) : ResultError($"{User.Username}#{User.Discriminator} ({User.ID}) has not granted consent and this command cannot run.");
 }

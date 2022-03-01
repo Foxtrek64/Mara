@@ -34,5 +34,36 @@ namespace Mara.Plugins.Core
         /// Gets a default footer that is used on dismissable embeds.
         /// </summary>
         public static readonly EmbedFooter DismissableEmbedFooter = new("React with ❌ to remove this embed");
+
+        /// <summary>
+        /// A collection of keys for IMemoryCache objects.
+        /// </summary>
+        public static class CacheKeys
+        {
+            /// <summary>
+            /// A cache key for storing and retrieving the current bot user.
+            /// </summary>
+            public const string BotUser = nameof(BotUser);
+
+            /// <summary>
+            /// A cache key for storing and retrieving the current application.
+            /// </summary>
+            public const string CurrentApplication = nameof(CurrentApplication);
+
+            /// <summary>
+            /// A cache key for storing and retrieving the current shard number.
+            /// </summary>
+            public const string ShardNumber = nameof(ShardNumber);
+
+            /// <summary>
+            /// A cache key for storing and retrieving the bot's startup time.
+            /// </summary>
+            public const string StartupTime = nameof(StartupTime);
+
+            /// <summary>
+            /// A cache key for storing and retrieving the guilds the bot is a member of at startup.
+            /// </summary>
+            public const string StartupGuilds = nameof(StartupGuilds);
+        }
     }
 }

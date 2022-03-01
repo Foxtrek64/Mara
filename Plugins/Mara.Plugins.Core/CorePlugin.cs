@@ -29,6 +29,7 @@ using Mara.Plugins.Core.Commands;
 using Mara.Plugins.Core.Responders;
 using Microsoft.Extensions.DependencyInjection;
 using Remora.Commands.Extensions;
+using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Gateway.Extensions;
 using Remora.Plugins.Abstractions;
 using Remora.Results;
@@ -56,6 +57,7 @@ namespace Mara.Plugins.Core
             serviceCollection.AddResponder<SlashCommandRegistrationResponder>();
             serviceCollection.AddResponder<UnknownEventResponder>();
             serviceCollection.AddResponder<DeleteRequestResponder>();
+            serviceCollection.AddPostExecutionEvent<PostExectionResponder>();
 
             serviceCollection.AddCommandTree(Name)
                 .WithCommandGroup<AboutCommand>()
