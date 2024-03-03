@@ -2,29 +2,29 @@
 //  AboutCommand.cs
 //
 //  Author:
-//       LuzFaltex Contributors
+//       LuzFaltex Contributors <support@luzfaltex.com>
 //
-//  ISC License
+//  Copyright (c) LuzFaltex, LLC.
 //
-//  Copyright (c) 2021 LuzFaltex
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//  Permission to use, copy, modify, and/or distribute this software for any
-//  purpose with or without fee is hereby granted, provided that the above
-//  copyright notice and this permission notice appear in all copies.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU Lesser General Public License for more details.
 //
-//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading.Tasks;
+using ByteSizeLib;
 using Mara.Common.Discord;
 using Mara.Common.Extensions;
 using Mara.Common.Models;
@@ -36,8 +36,11 @@ using Remora.Discord.API;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
+using Remora.Discord.API.Gateway.Commands;
+using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Discord.Extensions.Embeds;
+using Remora.Discord.Extensions.Formatting;
 using Remora.Results;
 
 using CacheKeys = Mara.Plugins.Core.CoreConstants.CacheKeys;
@@ -47,28 +50,19 @@ namespace Mara.Plugins.Core.Commands
     /// <summary>
     /// A command which provides information about the bot.
     /// </summary>
-    public sealed class AboutCommand : CommandGroup
+    /// <param name="feedbackService">The Command Feedback service.</param>
+    /// <param name="userApi">A <see cref="IDiscordRestUserAPI"/> for getting user information.</param>
+    /// <param name="memoryCache">A memory cache.</param>
+    /// <param name="config">The bot config.</param>
+    public sealed class AboutCommand
+    (
+        FeedbackService feedbackService,
+        IDiscordRestUserAPI userApi,
+        IMemoryCache memoryCache,
+        IOptions<RuntimeConfig> config
+    )
+        : CommandGroup
     {
-        private readonly FeedbackService _feedbackService;
-        private readonly IDiscordRestUserAPI _userApi;
-        private readonly IMemoryCache _memoryCache;
-        private readonly MaraConfig _config;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AboutCommand"/> class.
-        /// </summary>
-        /// <param name="feedbackService">The Command Feedback service.</param>
-        /// <param name="userApi">A <see cref="IDiscordRestUserAPI"/> for getting user information.</param>
-        /// <param name="memoryCache">A memory cache.</param>
-        /// <param name="config">The bot config.</param>
-        public AboutCommand(FeedbackService feedbackService, IDiscordRestUserAPI userApi, IMemoryCache memoryCache, IOptions<MaraConfig> config)
-        {
-            _feedbackService = feedbackService;
-            _userApi = userApi;
-            _memoryCache = memoryCache;
-            _config = config.Value;
-        }
-
         /// <summary>
         /// Provides an informational embed describing the bot.
         /// </summary>
@@ -77,18 +71,18 @@ namespace Mara.Plugins.Core.Commands
         [Description("Provides information about the bot.")]
         public async Task<Result<IMessage>> ShowBotInfoAsync()
         {
-            var application = _memoryCache.Get<IApplication>(CacheKeys.CurrentApplication);
-
-            var embedBuilder = new EmbedBuilder()
-                .WithTitle(application.Name)
-                .WithUrl(_config.BotWebsiteUrl)
-                .WithColour(Color.Pink)
-                .WithDescription(application.Description);
+            var application = memoryCache.Get<IApplication>(CacheKeys.CurrentApplication);
 
             if (application is null)
             {
                 return Result<IMessage>.FromError(new NotFoundError("Could not retrieve owner information."));
             }
+
+            EmbedBuilder embedBuilder = new EmbedBuilder()
+                                        .WithTitle(application.Name)
+                                        .WithUrl(config.Value.BotWebsiteUrl)
+                                        .WithColour(Color.Pink)
+                                        .WithDescription(application.Description);
 
             if (application.Team is { } team)
             {
@@ -97,11 +91,11 @@ namespace Mara.Plugins.Core.Commands
                 if (avatarUrlResult.IsSuccess)
                 {
                     var avatarUrl = avatarUrlResult.Entity;
-                    embedBuilder = embedBuilder.WithAuthor(team.Name, iconUrl: avatarUrl!.AbsoluteUri);
+                    embedBuilder = embedBuilder.WithAuthor(team.Name, iconUrl: avatarUrl.AbsoluteUri);
                 }
                 else
                 {
-                    var teamOwner = await _userApi.GetUserAsync(team.OwnerUserID, CancellationToken);
+                    var teamOwner = await userApi.GetUserAsync(team.OwnerUserID, CancellationToken);
                     if (teamOwner.IsSuccess)
                     {
                         embedBuilder = embedBuilder.WithAuthor(teamOwner.Entity);
@@ -110,12 +104,12 @@ namespace Mara.Plugins.Core.Commands
             }
             else
             {
-                if (application.Owner is not IPartialUser owner)
+                if (!application.Owner.IsDefined(out var owner))
                 {
                     return Result<IMessage>.FromError(new NotFoundError("Could not retrieve owner information."));
                 }
 
-                var user = await _userApi.GetUserAsync(owner.ID.Value, CancellationToken);
+                var user = await userApi.GetUserAsync(owner.ID.Value, CancellationToken);
                 if (user.IsSuccess)
                 {
                     embedBuilder = embedBuilder.WithAuthor(user.Entity);
@@ -124,27 +118,22 @@ namespace Mara.Plugins.Core.Commands
 
             embedBuilder.AddField("Version", typeof(CorePlugin).Assembly.GetName().Version?.ToString(3) ?? "1.0.0");
 
-            if (_memoryCache.TryGetValue<IShardIdentification>(CacheKeys.ShardNumber, out var shardNumber))
-            {
-                embedBuilder.AddField("Shard", $"{shardNumber.ShardID}/{shardNumber.ShardCount}");
-            }
-            else
-            {
-                embedBuilder.AddField("Shard", "Unsharded.");
-            }
+            string shardText = memoryCache.TryGetValue(CacheKeys.ShardNumber, out IShardIdentification? shardIdentification)
+                ? $"{shardIdentification!.ShardID}/{shardIdentification.ShardCount}"
+                : "Unsharded.";
 
-            var uptime = _memoryCache.Get<DateTimeOffset>(CacheKeys.StartupTime);
-            embedBuilder.AddField("Uptime", FormatUtilities.DynamicTimeStamp(uptime, FormatUtilities.TimeStampStyle.LongTime));
+            embedBuilder.AddField("Shard", shardText);
 
-            embedBuilder.AddField("Memory Utilization", GC.GetGCMemoryInfo().TotalCommittedBytes.ToFileSize());
+            var uptime = memoryCache.Get<DateTimeOffset>(CacheKeys.StartupTime);
+            embedBuilder.AddField("Uptime", Markdown.Timestamp(uptime, TimestampStyle.LongTime));
+
+            var committedBytes = ByteSize.FromBytes(GC.GetGCMemoryInfo().TotalCommittedBytes);
+            embedBuilder.AddField("Memory Utilization", committedBytes.ToString());
 
             var buildResult = embedBuilder.Build();
-            if (buildResult.IsDefined(out var embed))
-            {
-                return await _feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken);
-            }
-
-            return Result<IMessage>.FromError(buildResult);
+            return buildResult.IsDefined(out Embed? embed)
+                ? await feedbackService.SendContextualEmbedAsync(embed, ct: CancellationToken)
+                : Result<IMessage>.FromError(buildResult);
         }
     }
 }

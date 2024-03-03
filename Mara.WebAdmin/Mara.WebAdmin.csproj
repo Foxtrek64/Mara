@@ -1,0 +1,38 @@
+<Project>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Web" />
+    <Import Project="Sdk.props" Sdk="Remora.Sdk" />
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <VersionPrefix>0.1.0</VersionPrefix>
+        <Description>Provides a web client for managing Mara.</Description>
+        <PackageReleaseNotes>Initial Release.</PackageReleaseNotes>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>d13c65c9-085e-4280-a0f5-3ee06eb19ca6</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mara.Common\Mara.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Remora.Discord.Caching" Version="38.0.1" />
+      <PackageReference Include="Serilog" Version="3.1.1" />
+      <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+      <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    </ItemGroup>
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Web" />
+    <Import Project="Sdk.targets" Sdk="Remora.Sdk" />
+
+</Project>

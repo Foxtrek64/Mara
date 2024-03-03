@@ -1,0 +1,11 @@
+{
+  "sdk": {
+    "version": "8.0.0",
+    "rollForward": "latestMajor",
+    "allowPrerelease": true
+  },
+  "msbuild-sdks": {
+    "Remora.Sdk": "3.0.1",
+    "Remora.Tests.Sdk": "3.0.1"
+  }
+}

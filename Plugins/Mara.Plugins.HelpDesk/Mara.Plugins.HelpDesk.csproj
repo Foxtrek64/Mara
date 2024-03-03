@@ -1,0 +1,25 @@
+<Project Sdk="Remora.Sdk">
+
+  <PropertyGroup>
+    <LibraryFrameworks>net8.0</LibraryFrameworks>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <Description>
+      Provides a thread-based support ticket system.
+    </Description>
+    <PackageTags>$(PackageTags)</PackageTags>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Remora.Plugins.Abstractions" Version="4.0.7" />
+    <PackageReference Include="Remora.Rest.Core" Version="2.2.1" />
+    <PackageReference Update="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+</Project>

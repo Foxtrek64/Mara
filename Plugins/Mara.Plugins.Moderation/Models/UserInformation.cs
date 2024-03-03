@@ -2,23 +2,22 @@
 //  UserInformation.cs
 //
 //  Author:
-//       LuzFaltex Contributors
+//       LuzFaltex Contributors <support@luzfaltex.com>
 //
-//  ISC License
+//  Copyright (c) LuzFaltex, LLC.
 //
-//  Copyright (c) 2021 LuzFaltex
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//  Permission to use, copy, modify, and/or distribute this software for any
-//  purpose with or without fee is hereby granted, provided that the above
-//  copyright notice and this permission notice appear in all copies.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU Lesser General Public License for more details.
 //
-//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 using System;
@@ -33,23 +32,35 @@ namespace Mara.Plugins.Moderation.Models
     public sealed class UserInformation
     {
         /// <summary>
-        /// Gets or sets the unique id of the user.
+        /// Gets the unique id of the user.
         /// </summary>
-        public Snowflake Id { get; set; }
+        public Snowflake Id { get; init; }
 
         /// <summary>
-        /// Gets or sets the time and date this user was first seen.
+        /// Gets the time and date this user was first seen.
         /// </summary>
-        public DateTime FirstSeen { get; set; }
+        public DateTimeOffset FirstSeen { get; init; }
 
         /// <summary>
         /// Gets or sets the date and time this user was most recently seen.
         /// </summary>
-        public DateTime LastSeen { get; set; }
+        public DateTimeOffset LastSeen { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of infractions this user has been awarded.
+        /// Gets a list of infractions this user has been awarded.
         /// </summary>
-        public List<Infraction> Infractions { get; set; } = new();
+        public IReadOnlyList<Infraction> Infractions => _infractions.AsReadOnly();
+
+        /// <summary>
+        /// A list of infractions belonging to this user.
+        /// </summary>
+        private readonly List<Infraction> _infractions = new();
+
+        /// <summary>
+        /// Adds a new infraction to the infractions for this user.
+        /// </summary>
+        /// <param name="infraction">The infraction to add.</param>
+        // Internal to ensure consumers go through the UserService.
+        internal void AddInfraction(Infraction infraction) => _infractions.Add(infraction);
     }
 }

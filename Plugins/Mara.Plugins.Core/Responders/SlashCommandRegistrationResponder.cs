@@ -2,27 +2,28 @@
 //  SlashCommandRegistrationResponder.cs
 //
 //  Author:
-//       LuzFaltex Contributors
+//       LuzFaltex Contributors <support@luzfaltex.com>
 //
-//  ISC License
+//  Copyright (c) LuzFaltex, LLC.
 //
-//  Copyright (c) 2021 LuzFaltex
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//  Permission to use, copy, modify, and/or distribute this software for any
-//  purpose with or without fee is hereby granted, provided that the above
-//  copyright notice and this permission notice appear in all copies.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU Lesser General Public License for more details.
 //
-//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Mara.Common.Events;
 using Microsoft.Extensions.Logging;
 using Remora.Discord.API.Abstractions.Gateway.Events;
 using Remora.Discord.Commands.Services;
@@ -37,53 +38,31 @@ namespace Mara.Plugins.Core.Responders
     /// <summary>
     /// Registers server-level slash commands.
     /// </summary>
-    public sealed class SlashCommandRegistrationResponder : IResponder<IGuildCreate>
+    /// <param name="slashService">The slash service.</param>
+    /// <param name="logger">A logger for this instance.</param>
+    [UsedImplicitly]
+    public sealed class SlashCommandRegistrationResponder
+    (
+        SlashService slashService,
+        ILogger<SlashCommandRegistrationResponder> logger
+    )
+        : LoggingEventResponderBase<IGuildCreate>(logger)
     {
-        private readonly SlashService _slashService;
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SlashCommandRegistrationResponder"/> class.
-        /// </summary>
-        /// <param name="slashService">The slash service.</param>
-        /// <param name="logger">A logger.</param>
-        public SlashCommandRegistrationResponder(SlashService slashService, ILogger<SlashCommandRegistrationResponder> logger)
-        {
-            _slashService = slashService;
-            _logger = logger;
-        }
-
         /// <inheritdoc />
-        public async Task<Result> RespondAsync(IGuildCreate gatewayEvent, CancellationToken cancellationToken = default)
+       protected override async Task<Result> HandleAsync(IGuildCreate gatewayEvent, CancellationToken cancellationToken = default)
         {
-            // For debug only
-            var guildId = new Snowflake(861515006067998731, DiscordConstants.DiscordEpoch);
+            // Load slash commands
+            Result updateSlashCommandsResult = gatewayEvent.Guild.IsT0
+                ? await slashService.UpdateSlashCommandsAsync(gatewayEvent.Guild.AsT0.ID, ct: cancellationToken)
+                : Result.FromSuccess();
 
-            if (gatewayEvent.ID != guildId)
+            if (updateSlashCommandsResult.IsSuccess)
             {
                 return Result.FromSuccess();
             }
 
-            // Load slash commands
-            var checkSlashService = _slashService.SupportsSlashCommands();
-
-            if (checkSlashService.IsSuccess)
-            {
-                var updateSlash = await _slashService.UpdateSlashCommandsAsync(guildId, ct: cancellationToken);
-                if (!updateSlash.IsSuccess)
-                {
-                    _logger.LogWarning("Failed to update slash commands: {Reason}", updateSlash.Error.Message);
-
-                    return updateSlash;
-                }
-            }
-            else
-            {
-                _logger.LogWarning("The registered commands of the bot don't support slash commands: {Reason}", checkSlashService.Error.Message);
-                return checkSlashService;
-            }
-
-            return Result.FromSuccess();
+            logger.LogWarning("Failed to update slash commands: {Reason}", updateSlashCommandsResult.Error.Message);
+            return updateSlashCommandsResult;
         }
     }
 }

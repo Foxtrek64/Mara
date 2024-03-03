@@ -1,28 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Remora.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <AssemblyFileVersion>$(Version)</AssemblyFileVersion>
+    <LibraryFrameworks>net8.0</LibraryFrameworks>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PackageReleaseNotes>Initial Release.</PackageReleaseNotes>
+    <Description>
+      Extends the capability of Embeds for sites like Reddit, Twitter (X), and Facebook.
+    </Description>
+    <PackageTags>$(PackageTags)</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JsonDocumentPath" Version="1.0.2" />
-    <PackageReference Include="Remora.Discord.Extensions" Version="2.0.1" />
-    <PackageReference Include="Remora.Plugins" Version="3.0.1" />
-    <PackageReference Include="Remora.Rest" Version="1.1.2" />
-    <PackageReference Include="Remora.Rest.Core" Version="2.0.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    <PackageReference Include="JsonDocumentPath" Version="1.0.3" />
+    <PackageReference Include="Remora.Discord.Extensions" Version="5.3.4" />
+    <PackageReference Include="Remora.Plugins" Version="3.0.7" />
+    <PackageReference Include="Remora.Rest" Version="3.3.2" />
+    <PackageReference Include="Remora.Rest.Core" Version="2.2.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Results\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mara.Common\Mara.Common.csproj" />
     <ProjectReference Include="..\Mara.Plugins.Core\Mara.Plugins.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Results\" />
   </ItemGroup>
 
 </Project>

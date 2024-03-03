@@ -54,9 +54,14 @@
             A cache key for storing and retrieving the current shard number.
             </summary>
         </member>
-        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.Uptime">
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.StartupTime">
             <summary>
-            A cache key for storing and retrieving the bot's up time.
+            A cache key for storing and retrieving the bot's startup time.
+            </summary>
+        </member>
+        <member name="F:Mara.Plugins.Core.CoreConstants.CacheKeys.StartupGuilds">
+            <summary>
+            A cache key for storing and retrieving the guilds the bot is a member of at startup.
             </summary>
         </member>
         <member name="T:Mara.Plugins.Core.CorePlugin">

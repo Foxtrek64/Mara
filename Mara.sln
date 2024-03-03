@@ -16,8 +16,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{39EA8E1A-E1D9-419D-AF42-860058C74536}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
-		stylecop.json = stylecop.json
-		stylecop.ruleset = stylecop.ruleset
+		LICENSE = LICENSE
+		readme.md = readme.md
+		global.json = global.json
+		.gitignore = .gitignore
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mara.Plugins.Consent", "Plugins\Mara.Plugins.Consent\Mara.Plugins.Consent.csproj", "{EE0456BD-8336-4C69-9E03-143B5B37BC51}"
@@ -37,6 +39,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mara.Plugins.BetterEmbeds.Tests", "Tests\Mara.Plugins.BetterEmbeds.Tests\Mara.Plugins.BetterEmbeds.Tests.csproj", "{D428E6C3-22D0-46D8-B954-DAEDD20E4FBD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mara.Plugins.Automation", "Plugins\Mara.Plugins.Automation\Mara.Plugins.Automation.csproj", "{104A2B1B-8BAB-41C9-93B7-2EF52955DB7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mara.WebRuntime", "Mara.WebRuntime\Mara.WebRuntime.csproj", "{CAC7C5C7-C58C-49B5-AFA3-71CC69E401E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mara.Plugins.HelpDesk", "Plugins\Mara.Plugins.HelpDesk\Mara.Plugins.HelpDesk.csproj", "{05A45F46-A38C-4233-A0B1-A9865EE6E4A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mara.WebAdmin", "Mara.WebAdmin\Mara.WebAdmin.csproj", "{72B1E109-3562-45C0-9F34-AA7F30CD3667}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +100,18 @@ Global
 		{104A2B1B-8BAB-41C9-93B7-2EF52955DB7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{104A2B1B-8BAB-41C9-93B7-2EF52955DB7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{104A2B1B-8BAB-41C9-93B7-2EF52955DB7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAC7C5C7-C58C-49B5-AFA3-71CC69E401E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAC7C5C7-C58C-49B5-AFA3-71CC69E401E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAC7C5C7-C58C-49B5-AFA3-71CC69E401E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAC7C5C7-C58C-49B5-AFA3-71CC69E401E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A45F46-A38C-4233-A0B1-A9865EE6E4A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A45F46-A38C-4233-A0B1-A9865EE6E4A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A45F46-A38C-4233-A0B1-A9865EE6E4A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A45F46-A38C-4233-A0B1-A9865EE6E4A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72B1E109-3562-45C0-9F34-AA7F30CD3667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B1E109-3562-45C0-9F34-AA7F30CD3667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B1E109-3562-45C0-9F34-AA7F30CD3667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B1E109-3562-45C0-9F34-AA7F30CD3667}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +127,7 @@ Global
 		{15258F26-D701-468C-AFC2-4481893DD4AD} = {8F10A9B2-5A0D-4B05-8EF7-A55D45D66BA4}
 		{D428E6C3-22D0-46D8-B954-DAEDD20E4FBD} = {8F10A9B2-5A0D-4B05-8EF7-A55D45D66BA4}
 		{104A2B1B-8BAB-41C9-93B7-2EF52955DB7A} = {5095E260-6923-41C6-9DF8-A395F2EE275C}
+		{05A45F46-A38C-4233-A0B1-A9865EE6E4A2} = {5095E260-6923-41C6-9DF8-A395F2EE275C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7F5007AB-7A59-4CAF-B60F-5FA522B11A6C}

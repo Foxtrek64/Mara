@@ -2,43 +2,48 @@
 //  Program.cs
 //
 //  Author:
-//       LuzFaltex Contributors
+//       LuzFaltex Contributors <support@luzfaltex.com>
 //
-//  ISC License
+//  Copyright (c) LuzFaltex, LLC.
 //
-//  Copyright (c) 2021 LuzFaltex
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU Lesser General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
 //
-//  Permission to use, copy, modify, and/or distribute this software for any
-//  purpose with or without fee is hereby granted, provided that the above
-//  copyright notice and this permission notice appear in all copies.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU Lesser General Public License for more details.
 //
-//  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-//  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-//  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-//  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-//  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-//  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-//  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//  You should have received a copy of the GNU Lesser General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Mara.Common;
 using Mara.Common.Discord.Feedback;
+using Mara.Common.Extensions;
 using Mara.Common.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Remora.Discord.API.Abstractions.Gateway.Commands;
+using Remora.Discord.Caching.Extensions;
 using Remora.Discord.Commands.Extensions;
 using Remora.Discord.Gateway;
 using Remora.Discord.Gateway.Extensions;
+using Remora.Discord.Rest.Extensions;
+using Remora.Plugins.Abstractions;
 using Remora.Plugins.Services;
 using Remora.Results;
 using Serilog;
@@ -81,9 +86,7 @@ namespace Mara.Runtime
                     builder.AddEnvironmentVariables("Mara_");
 
                     builder.AddJsonFile("appsettings.json", true);
-                    builder.AddJsonFile($"appsettings{context.HostingEnvironment.EnvironmentName}.json", true);
-                    builder.AddJsonFile(Path.Combine(AppDir, "appsettings.json"), true);
-                    builder.AddJsonFile(Path.Combine(AppDir, $"..\\appsettings{context.HostingEnvironment.EnvironmentName}.json"), true);
+                    builder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true);
 
                     if (context.HostingEnvironment.IsDevelopment())
                     {
@@ -112,6 +115,7 @@ namespace Mara.Runtime
 
                     var plugins = pluginService.LoadPluginTree();
                     var configurePluginsResult = plugins.ConfigureServices(services);
+                    // var configurePluginsResult = Result.FromSuccess();
                     if (!configurePluginsResult.IsSuccess)
                     {
                         if (configurePluginsResult.Error is AggregateError aggregateError)
@@ -138,13 +142,31 @@ namespace Mara.Runtime
                         }
                     }
 
-                    services.Configure<MaraConfig>(context.Configuration);
+                    services.AddConfigurationModule<RuntimeConfig>()
+                            .PostConfigure(
+                                options =>
+                                {
+                                    if (string.IsNullOrWhiteSpace(options.BotWebsiteUrl))
+                                    {
+                                        options = options with { BotWebsiteUrl = "https://localhost" };
+                                    }
+                                })
+                            .Validate
+                            (
+                                x => !string.IsNullOrWhiteSpace(x.BotToken),
+                                "Discord token must not be null or white space."
+                            )
+                            .Validate
+                            (
+                                x => Uri.TryCreate(x.BotWebsiteUrl, UriKind.Absolute, out _),
+                                "Website URL must not be null or white space."
+                            );
                     services.AddSingleton(pluginService);
 
-                    Debug.Assert(!string.IsNullOrEmpty(context.Configuration[nameof(MaraConfig.DiscordToken)]), $"The '{nameof(MaraConfig.DiscordToken)}' must not be null or empty.");
-
-                    services.AddDiscordGateway(x => context.Configuration[nameof(MaraConfig.DiscordToken)]);
+                    services.AddDiscordRest();
+                    services.AddDiscordGateway(x => x.GetRequiredService<IOptions<RuntimeConfig>>().Value.BotToken);
                     services.AddDiscordCommands(enableSlash: true);
+                    services.AddDiscordCaching();
 
                     services.AddMemoryCache();
                     services.AddHostedService<MaraBot>();
@@ -171,6 +193,16 @@ namespace Mara.Runtime
 
             try
             {
+                using var serviceScope = host.Services.CreateAsyncScope();
+
+                // Get all plugins and run migrations
+                var plugins = serviceScope.ServiceProvider.GetRequiredService<PluginService>().LoadPlugins().OfType<IMigratablePlugin>();
+                // var plugins = Array.Empty<IMigratablePlugin>();
+                foreach (var plugin in plugins)
+                {
+                    await plugin.MigrateAsync(serviceScope.ServiceProvider);
+                }
+
                 await host.RunAsync();
                 return 0;
             }
